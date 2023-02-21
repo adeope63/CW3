@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learn git</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"
+    />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="manifest" href="cw2.webmanifest">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+    }
+  </script>
+    <script src="js/lessonData.js"></script>
+  </head>
+
+  <body>
+    <div id="app">
+      <div class="main-container">
+        <div class="cartDiv">
+          <button class="cartBtn" v-if="cart<1" disabled>
+            Checkout {{cartItemCount}}
+          </button>
+          <button class="cartBtn" v-else v-on:click="showCheckout">
+            Checkout {{cartItemCount}}
+          </button>
+        </div>
+
+        <div class="lesson" v-if="showProductPage">
+          <header class="header">
+            <div class="sort">
+              <span>Sort by: </span>
+              <div>
+                <label for="subject">Subject</label>
+                <input
+                  type="radio"
+                  id="subject"
+                  value="subject"
+                  v-model="sortBy"
+                  checked
+                />
+              </div>
+              <div>
+                <label for="location">Location</label>
+                <input
+                  type="radio"
+                  id="location"
+                  value="location"
+                  v-model="sortBy"
+                />
+              </div>
+              <div>
+                <label for="price">Price</label>
+                <input type="radio" id="price" value="price" v-model="sortBy" />
+              </div>
+              <div>
+                <label for="availability">Availability</label>
+                <input
+                  type="radio"
+                  id="availability"
+                  value="availability"
+                  v-model="sortBy"
+                />
+              </div>
+            </div>
+
+            <div class="arrangement">
+              <span>Order: </span>
+              <label for="ascending">Ascending order</label>
+              <input
+                type="radio"
+                id="ascending"
+                value="true"
+                v-model="ascending"
+                checked
+              />
+              <label for="descending">Descending order </label>
+              <input
+                type="radio"
+                id="descending"
+                value="false"
+                v-model="ascending"
+              />
+            </div>
+            <input
+              class="search"
+              type="text"
+              v-model="search"
+              placeholder="Search title.."
+            />
+
+            <h1>Lessons</h1>
+          </header>
+
+          <main class="container">
+            <!--Looping across the Avaliable Lesson-->
+
+            <section
+              class="paragraph"
+              v-for="item in sortedJson"
+              :key="item.id"
+            >
+              <p class="subject">Subject: {{ item.subject }}</p>
+              <p class="location">Location: {{ item.location }}</p>
+              <p class="price">Price: €{{ item.price }}</p>
+              <p class="space">Spaces: {{ item.space }}</p>
+              <img class="image" :src="item.imgURL" alt="" />
+              <button
+                class="add"
+                v-on:click="addToCart($event, item.id)"
+                v-if="item.space > 0"
+              >
+                Add to Cart
+              </button>
+              <!--Disable button when no space left-->
+              <button class="add" disabled="disabled" v-else>
+                Add to Cart
+              </button>
+            </section>
+          </main>
+        </div>
+
+        <div v-else>
+          <h1>Cart</h1>
+          <button class="cartBtn" v-if="cart==0" v-on:click="showCheckout">
+            Go back to homepage
+          </button>
+          <main class="container">
+            <section class="paragraph" v-for="item in cart" :key="item.id">
+              <p class="subject">Subject: {{ item.subject }}</p>
+              <p class="location">Location: {{ item.location }}</p>
+              <p class="price">Price: €{{ item.price }}</p>
+              <!-- <p class="space">Spaces: {{ item.space }}</p> -->
+              <img class="image" :src="item.imgURL" alt="" />
+              <button class="add" @click="removeFromCart($event,item.id)">
+                Remove
+              </button>
+            </section>
+          </main>
+
+          <div class="details">
+            <div class="name">
+              <label for="fname">First Name: </label>
+              <input id="fname" placeholder="Name" type="text" v-model="fname" />
+            </br>
+               <label for="lname">Last Name: </label>
+              <input id="lname" placeholder="Name" type="text" v-model="lname" />
+            </div>
+            <div class="number">
+              <label for="number">Phone Number: </label>
+              <input
+                id="number"
+                placeholder="Phone Number"
+                v-model="number"
+                type="number"
+              />
+            </div>
+
+            <button v-if="letterfValid && letterfValid && numberValid" v-on:click="submitForm">
+              Place Order
+            </button>
+            <button v-else disabled="disabled">Place order</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      //Importing  the Json file
+      //  lesson from "./lessonData.js"
+      const { createApp } = Vue;
+
+      createApp({
+        data() {
+          return {
+            cart: [],
+            showProductPage: true,
+            data: lesson,
+            // arrange  : "ascending",
+            ascending: String('true'),
+            sortBy: 'subject',
+            search: '',
+            name: '',
+            number: '',
+            // numberValid: this.number.value,
+          };
+        },
+        methods: {
+          addToCart(event, id) {
+            let idx;
+            let [item, index] = this.data.filter((k, index) => {
+              if (k.id == id) {
+                idx = index;
+                return k;
+              }
+            });
+
+            this.data[idx].space -= 1;
+
+            this.cart.push(item);
+          },
+          sortByPrice: function (priceArray) {
+            function compare(a, b) {
+              if (a.price > b.price) return 1;
+              if (a.price < b.price) return -1;
+              return 0;
+            }
+            return priceArray.sort(compare);
+          },
+          sortBySubject: function (subjectArray) {
+            function compare(a, b) {
+              if (a.subject > b.subject) return 1;
+              if (a.subject < b.subject) return -1;
+              return 0;
+            }
+            return subjectArray.sort(compare);
+          },
+          sortByLocation: function (locationArray) {
+            function compare(a, b) {
+              if (a.location > b.location) return 1;
+              if (a.location < b.location) return -1;
+              return 0;
+            }
+            return locationArray.sort(compare);
+          },
+          sortByAvailable: function (availabilityArray) {
+            function compare(a, b) {
+              if (a.space > b.space) return 1;
+              if (a.space < b.space) return -1;
+              return 0;
+            }
+            return availabilityArray.sort(compare);
+          },
+
+          submitForm() {
+            alert('Order Submitted!');
+          },
+
+          showCheckout() {
+            this.showProductPage = this.showProductPage ? false : true;
+          },
+
+          removeFromCart(event, id) {
+            let idx;
+            let [item, index] = this.data.filter((k, index) => {
+              if (k.id == id) {
+                idx = index;
+                return k;
+              }
+            });
+
+            this.data[idx].space += 1;
+
+            // let lesson = this.cart
+            // for(i=o;i<lesson.length;i++){
+            //   if(i == id){
+
+            //   }
+            // }
+
+            this.cart.pop(item.id);
+            // item.id.space++
+          },
+        },
+        computed: {
+          letterfValid(fname) {
+            let letters = /^[A-Za-z]+$/;
+            if (letters.test(this.fname)) {
+              return true;
+            } else {
+              return false;
+            }
+          },
+          letterlValid(lname) {
+            let letters = /^[A-Za-z]+$/;
+            if (letters.test(this.name)) {
+              return true;
+            } else {
+              return false;
+            }
+          },
+          numberValid(number) {
+            let numbers = /^[0-9]+$/;
+            if (numbers.test(this.number)) {
+              return true;
+            } else {
+              return false;
+            }
+          },
+          cartItemCount() {
+            return this.cart.length || '';
+          },
+          sortedJson: function () {
+            let tempLessons = this.data;
+
+            tempLessons = tempLessons.filter((lesson) => {
+              return (
+                lesson.subject
+                  .toLowerCase()
+                  .includes(this.search.toLowerCase()) ||
+                lesson.location
+                  .toLowerCase()
+                  .includes(this.search.toLowerCase())
+              );
+            });
+            if (this.sortBy == 'price') {
+              tempLessons = this.sortByPrice(tempLessons);
+            } else if (this.sortBy == 'subject') {
+              tempLessons = this.sortBySubject(tempLessons);
+            } else if (this.sortBy == 'location') {
+              tempLessons = this.sortByLocation(tempLessons);
+            } else if (this.sortBy == 'space') {
+              tempLessons = this.sortByAvailability(tempLessons);
+            }
+
+            if (this.ascending == 'true') {
+              return tempLessons;
+            } else if (this.ascending == 'false') {
+              return tempLessons.reverse();
+            }
+            return tempLessons;
+          },
+        },
+        component: {},
+      }).mount('#app');
+    </script>
+  </body>
+</html>
