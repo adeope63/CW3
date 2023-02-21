@@ -3,7 +3,7 @@ const cacheFiles = [
   'index.html',
   'cw2.webmanifest',
   'style.css',
-  'lessonData.js',
+  'js/lessonData.js',
   'assests/computer.png',
   'assests/dance.png',
   'assests/english.png',
