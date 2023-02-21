@@ -4,13 +4,13 @@ const cacheFiles = [
   'cw2.webmanifest',
   'style.css',
   'js/lessonData.js',
-  'assests/computer.png',
-  'assests/dance.png',
-  'assests/english.png',
-  'assests/FMS2.png',
-  'assests/FMS.png',
-  'assests/math.png',
-  'assests/music.png'
+  'assets/computer.png',
+  'assets/dance.png',
+  'assets/english.png',
+  'assets/FMS2.png',
+  'assets/FMS.png',
+  'assets/math.png',
+  'assets/music.png'
 ]
 
 // CACHING THE FILES IN THE SERVICE WORKER (cacheFiles)
